@@ -22,11 +22,14 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(passwordHash, 10);
+    const userCount = await this.prisma.user.count();
+    const role = userCount === 0 ? 'ADMIN' : 'USER';
 
     const user = await this.prisma.user.create({
       data: {
         email,
         passwordHash: hashedPassword,
+        role,
       },
     });
 
