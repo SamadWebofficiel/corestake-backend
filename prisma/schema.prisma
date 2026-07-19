@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String
+  isEmailVerified  Boolean           @default(false)
+  twoFactorSecret  String?
+  role             String            @default("USER") // Emulating Enum Role: "USER", "ADMIN"
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  wallets          Wallet[]
+  transactions     Transaction[]
+  stakePositions   StakePosition[]
+}
+
+model Wallet {
+  id               String            @id @default(uuid())
+  userId           String
+  currency         String            // CORE, ETH, BNB, etc.
+  network          String            // ERC20, BEP20, etc.
+  balance          Float             @default(0.0)
+  lockedBalance    Float             @default(0.0) // Balance currently staking
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, currency, network])
+}
+
+model Transaction {
+  id               String            @id @default(uuid())
+  userId           String
+  type             String            // Emulating Enum: "DEPOSIT", "WITHDRAWAL", "REWARD"
+  currency         String
+  network          String
+  amount           Float
+  fee              Float             @default(0.0)
+  txHash           String?           @unique
+  toAddress        String?           // For withdrawals
+  fromAddress      String?           // For deposits
+  status           String            @default("PENDING") // Emulating Enum: "PENDING", "COMPLETED", "FAILED"
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StakePosition {
+  id               String            @id @default(uuid())
+  userId           String
+  protocol         String            // e.g., "Lido", "RocketPool", "Core_Native"
+  currency         String
+  amount           Float
+  realYieldRate    Float             // APY retrieved from smart contract
+  startDate        DateTime          @default(now())
+  endDate          DateTime?
+  status           String            @default("ACTIVE") // Emulating Enum: "ACTIVE", "UNSTAKED", "COOLING_DOWN"
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
