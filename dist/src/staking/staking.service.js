@@ -32,26 +32,26 @@ let StakingService = class StakingService {
         if (!pool) {
             throw new common_1.BadRequestException('Invalid asset for staking');
         }
-        const stake = await this.prisma.stake.create({
+        const stake = await this.prisma.stakePosition.create({
             data: {
                 userId,
-                asset,
+                currency: asset,
                 amount,
-                apyAtStake: pool.apy,
-                status: 'ACTIVE',
+                protocol: 'Core_Native',
+                realYieldRate: 4.5,
             },
         });
         return stake;
     }
     async getMyStakes(userId) {
-        const stakes = await this.prisma.stake.findMany({
+        const stakes = await this.prisma.stakePosition.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' }
         });
         return stakes.map(stake => {
             const msStaked = Date.now() - stake.createdAt.getTime();
             const yearsStaked = msStaked / (1000 * 60 * 60 * 24 * 365);
-            const rewards = stake.amount * (stake.apyAtStake / 100) * yearsStaked;
+            const rewards = stake.amount * (stake.realYieldRate / 100) * yearsStaked;
             return {
                 ...stake,
                 rewardsGenerated: rewards
@@ -59,7 +59,7 @@ let StakingService = class StakingService {
         });
     }
     async unstake(userId, stakeId) {
-        const stake = await this.prisma.stake.findUnique({
+        const stake = await this.prisma.stakePosition.findUnique({
             where: { id: stakeId }
         });
         if (!stake || stake.userId !== userId) {
@@ -68,7 +68,7 @@ let StakingService = class StakingService {
         if (stake.status === 'UNSTAKED') {
             throw new common_1.BadRequestException('Already unstaked');
         }
-        return this.prisma.stake.update({
+        return this.prisma.stakePosition.update({
             where: { id: stakeId },
             data: { status: 'UNSTAKED' }
         });

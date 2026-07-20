@@ -8,12 +8,49 @@ export declare class StakingController {
         apy: number;
         tvl: number;
     }[];
-    getMyStakes(req: any): Promise<any>;
+    getMyStakes(req: any): Promise<{
+        rewardsGenerated: number;
+        id: string;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        protocol: string;
+        amount: number;
+        realYieldRate: number;
+        startDate: Date;
+        endDate: Date | null;
+        status: string;
+    }[]>;
     stake(req: any, body: {
         asset: string;
         amount: number;
-    }): Promise<any>;
+    }): Promise<{
+        id: string;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        protocol: string;
+        amount: number;
+        realYieldRate: number;
+        startDate: Date;
+        endDate: Date | null;
+        status: string;
+    }>;
     unstake(req: any, body: {
         stakeId: string;
-    }): Promise<any>;
+    }): Promise<{
+        id: string;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        protocol: string;
+        amount: number;
+        realYieldRate: number;
+        startDate: Date;
+        endDate: Date | null;
+        status: string;
+    }>;
 }

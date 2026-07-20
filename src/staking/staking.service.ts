@@ -28,13 +28,13 @@ export class StakingService {
     // In a real app, we would deduct the balance here
     // await this.prisma.user.update(...)
 
-    const stake = await this.prisma.stake.create({
+    const stake = await this.prisma.stakePosition.create({
       data: {
         userId,
-        asset,
+        currency: asset,
         amount,
-        apyAtStake: pool.apy,
-        status: 'ACTIVE',
+        protocol: 'Core_Native', // Default or provided by DTO
+        realYieldRate: 4.5, // Default or fetch from contract
       },
     });
 
@@ -42,7 +42,7 @@ export class StakingService {
   }
 
   async getMyStakes(userId: string) {
-    const stakes = await this.prisma.stake.findMany({
+    const stakes = await this.prisma.stakePosition.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }
     });
@@ -51,7 +51,7 @@ export class StakingService {
     return stakes.map(stake => {
       const msStaked = Date.now() - stake.createdAt.getTime();
       const yearsStaked = msStaked / (1000 * 60 * 60 * 24 * 365);
-      const rewards = stake.amount * (stake.apyAtStake / 100) * yearsStaked;
+      const rewards = stake.amount * (stake.realYieldRate / 100) * yearsStaked;
       
       return {
         ...stake,
@@ -61,7 +61,7 @@ export class StakingService {
   }
 
   async unstake(userId: string, stakeId: string) {
-    const stake = await this.prisma.stake.findUnique({
+    const stake = await this.prisma.stakePosition.findUnique({
       where: { id: stakeId }
     });
 
@@ -75,7 +75,7 @@ export class StakingService {
 
     // In a real app, calculate final rewards and return to balance
 
-    return this.prisma.stake.update({
+    return this.prisma.stakePosition.update({
       where: { id: stakeId },
       data: { status: 'UNSTAKED' }
     });

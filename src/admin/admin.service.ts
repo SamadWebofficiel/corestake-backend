@@ -7,14 +7,14 @@ export class AdminService {
 
   async getStats() {
     const totalUsers = await this.prisma.user.count();
-    const stakes = await this.prisma.stake.findMany({ where: { status: 'ACTIVE' } });
+    const stakes = await this.prisma.stakePosition.findMany({ where: { status: 'ACTIVE' } });
     
     let totalStakedCore = 0;
     let totalStakedBtc = 0;
 
     stakes.forEach(stake => {
-      if (stake.asset === 'CORE') totalStakedCore += stake.amount;
-      if (stake.asset === 'BTC') totalStakedBtc += stake.amount;
+      if (stake.currency === 'CORE') totalStakedCore += stake.amount;
+      if (stake.currency === 'BTC') totalStakedBtc += stake.amount;
     });
 
     return {
@@ -32,7 +32,7 @@ export class AdminService {
         email: true,
         role: true,
         createdAt: true,
-        stakes: true,
+        stakePositions: true,
       },
       orderBy: { createdAt: 'desc' }
     });

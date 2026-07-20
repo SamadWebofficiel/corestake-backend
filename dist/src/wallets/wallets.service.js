@@ -20,21 +20,19 @@ let WalletsService = class WalletsService {
     }
     async generateWalletForUser(userId) {
         const wallet = ethers_1.ethers.Wallet.createRandom();
-        const depositAddress = await this.prisma.depositAddress.create({
+        const walletData = await this.prisma.wallet.create({
             data: {
-                address: wallet.address,
-                privateKey: wallet.privateKey,
                 userId: userId,
+                currency: 'CORE',
+                network: 'Core_Native',
+                balance: 0.0,
             },
         });
-        return depositAddress;
+        return walletData;
     }
     async getWalletForUser(userId) {
-        return this.prisma.depositAddress.findUnique({
-            where: { userId },
-            select: {
-                address: true,
-            }
+        return this.prisma.wallet.findFirst({
+            where: { userId, currency: 'CORE' },
         });
     }
 };

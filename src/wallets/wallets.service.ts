@@ -13,23 +13,21 @@ export class WalletsService {
     // Save to database
     // Note: In a real production app, privateKey should be encrypted before saving
     // or managed via a Master Seed/KMS.
-    const depositAddress = await this.prisma.depositAddress.create({
+    const walletData = await this.prisma.wallet.create({
       data: {
-        address: wallet.address,
-        privateKey: wallet.privateKey,
         userId: userId,
+        currency: 'CORE',
+        network: 'Core_Native',
+        balance: 0.0,
       },
     });
 
-    return depositAddress;
+    return walletData;
   }
 
   async getWalletForUser(userId: string) {
-    return this.prisma.depositAddress.findUnique({
-      where: { userId },
-      select: {
-        address: true, // Never return privateKey to frontend
-      }
+    return this.prisma.wallet.findFirst({
+      where: { userId, currency: 'CORE' },
     });
   }
 }
